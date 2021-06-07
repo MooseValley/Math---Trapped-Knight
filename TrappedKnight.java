@@ -1,4 +1,13 @@
+/*
+     Author: Moose OMalley, https://github.com/MooseValley/
+       Date: 7-Jun-2021
+My web site: Moose's Sofwtare Valley, Established July-1996, https://moosevalley.github.io/
+     GitHub: https://github.com/MooseValley/Math---Trapped-Knight
+Description: My code to explore the Trapped Knight problem, following on from the Numberphile video:
+             https://www.youtube.com/watch?v=RGQe8waGJ4w
+License:     MIT License - use all or any part of my code, but you must give me full credit.
 
+*/
 import java.awt.Point;
 
 class ChessBoard
@@ -250,8 +259,10 @@ class ChessBoard
       }
    }
 
-   public void makeAllKnightMoves ()
+   public int makeAllKnightMoves ()
    {
+      int finalValue = -1;
+
       squareUsed [CENTER_X][CENTER_Y] = true;
 
       Point currMinPoint = new Point (CENTER_X, CENTER_Y);
@@ -264,14 +275,17 @@ class ChessBoard
 
          if (newMinPoint == null)
          {
-            System.out.println (" -> Stopped at " + currMinPoint  + ": " +
-                                board[(int) currMinPoint.getX()][(int) currMinPoint.getY()] );
+            finalValue = board[(int) currMinPoint.getX()][(int) currMinPoint.getY()];
+
+            System.out.println (" -> Stopped at " + currMinPoint  + ": " + finalValue );
 
             keepGoing = false;
          }
 
          currMinPoint = newMinPoint;
       }
+
+      return finalValue;
    }
 }
 
@@ -283,9 +297,12 @@ public class TrappedKnight
    {
       ChessBoard board = new ChessBoard ();
 
-      board.makeAllKnightMoves ();
+      int finalValue = board.makeAllKnightMoves ();
 
       System.out.println (board.toString() );
 
+      System.out.println ();
+      System.out.println ("Trapped Knight at: " + finalValue );
+      System.out.println ();
    }
 }
