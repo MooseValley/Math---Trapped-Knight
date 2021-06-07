@@ -1,11 +1,14 @@
 
+import java.awt.Point;
+
 class ChessBoard
 {
-   public static final int MAX        = 11;
+   public static final int MAX        = 61;
    public static final int CENTER_X   = MAX / 2;
    public static final int CENTER_Y   = MAX / 2;
 
-   private int[][] board = new int [MAX][MAX];
+   private int[][]     board      = new int [MAX][MAX];
+   private boolean[][] squareUsed = new boolean [MAX][MAX];
 
    /*
      Square Spiral:
@@ -95,7 +98,7 @@ class ChessBoard
 
          board [x][y] = nextCount;
 
-         System.out.println ("board [" + x + "][" + y + "]= " + nextCount);
+         //System.out.println ("board [" + x + "][" + y + "]= " + nextCount);
 
          nextCount++;
       }
@@ -112,21 +115,176 @@ class ChessBoard
       {
          for (int col = 0; col < MAX; col++)
          {
-            sb.append (String.format (formatStr, board[row][col]) + " ");
+            sb.append (String.format (formatStr, board[row][col]) );
+
+            if (squareUsed [row][col] == true)
+               sb.append ("*");
+
+            sb.append ("  ");
+
          }
          sb.append ("\n");
       }
 
       return sb.toString();
+   }
 
+
+   /*
+      row - 1, col - 2
+      row - 2, col - 1
+
+      row - 1, col + 2
+      row - 2, col + 1
+
+      row + 1, col - 2
+      row + 2, col - 1
+
+      row + 1, col + 2
+      row + 2, col + 1
+
+      ---------------------
+      |   | X |   | X |   |
+      ---------------------
+      | X |   |   |   | X |
+      ---------------------
+      |   |   | S |   |   |
+      ---------------------
+      | X |   |   |   | X |
+      ---------------------
+      |   | X |   | X |   |
+      ---------------------
+   */
+
+   private boolean isNewMinValue (int currMinValue, int row, int col)
+   {
+      boolean result = false;
+
+      if ((row >= 0) && (row < MAX) &&
+          (col >= 0) && (col < MAX) &&
+          (currMinValue > board [row][col])  &&
+          (squareUsed [row][col] == false)   )
+      {
+         result = true;
+      }
+
+      return result;
+   }
+
+   private Point getMinKnightMove (Point startPoint)
+   {
+      int minValue = Integer.MAX_VALUE;
+      int minRow   = 0;
+      int minCol   = 0;
+      int row      = (int) startPoint.getX ();
+      int col      = (int) startPoint.getY ();
+
+
+      if (isNewMinValue (minValue, row - 1, col - 2) == true)
+      {
+         minValue = board [row - 1][col - 2];
+         minRow   = row - 1;
+         minCol   = col - 2;
+      }
+
+      if (isNewMinValue (minValue, row - 2, col - 1) == true)
+      {
+         minValue = board [row - 2][col - 1];
+         minRow   = row - 2;
+         minCol   = col - 1;
+      }
+
+      if (isNewMinValue (minValue, row - 1, col + 2) == true)
+      {
+         minValue = board [row - 1][col + 2];
+         minRow   = row - 1;
+         minCol   = col + 2;
+      }
+
+      if (isNewMinValue (minValue, row - 2, col + 1) == true)
+      {
+         minValue = board [row - 2][col + 1];
+         minRow   = row - 2;
+         minCol   = col + 1;
+      }
+
+
+
+      if (isNewMinValue (minValue, row + 1, col - 2) == true)
+      {
+         minValue = board [row + 1][col - 2];
+         minRow   = row + 1;
+         minCol   = col - 2;
+      }
+
+      if (isNewMinValue (minValue, row + 2, col - 1) == true)
+      {
+         minValue = board [row + 2][col - 1];
+         minRow   = row + 2;
+         minCol   = col - 1;
+      }
+
+      if (isNewMinValue (minValue, row + 1, col +2) == true)
+      {
+         minValue = board [row + 1][col + 2];
+         minRow   = row + 1;
+         minCol   = col + 2;
+      }
+
+      if (isNewMinValue (minValue, row + 2, col + 1) == true)
+      {
+         minValue = board [row + 2][col + 1];
+         minRow   = row + 2;
+         minCol   = col + 1;
+      }
+
+      if (minValue < Integer.MAX_VALUE)
+      {
+         squareUsed [minRow][minCol] = true;
+
+         return new Point (minRow, minCol);
+      }
+      else
+      {
+         return null;
+      }
+   }
+
+   public void makeAllKnightMoves ()
+   {
+      squareUsed [CENTER_X][CENTER_Y] = true;
+
+      Point currMinPoint = new Point (CENTER_X, CENTER_Y);
+
+      boolean keepGoing = true;
+
+      while (keepGoing == true)
+      {
+         Point newMinPoint = getMinKnightMove (currMinPoint);
+
+         if (newMinPoint == null)
+         {
+            System.out.println (" -> Stopped at " + currMinPoint  + ": " +
+                                board[(int) currMinPoint.getX()][(int) currMinPoint.getY()] );
+
+            keepGoing = false;
+         }
+
+         currMinPoint = newMinPoint;
+      }
    }
 }
+
+
 
 public class TrappedKnight
 {
    public static void main (String[] args)
    {
       ChessBoard board = new ChessBoard ();
+
+      board.makeAllKnightMoves ();
+
       System.out.println (board.toString() );
 
    }
