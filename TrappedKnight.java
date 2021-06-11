@@ -18,6 +18,11 @@ class ChessBoard
 
    private int[][]     board      = new int [MAX][MAX];
    private boolean[][] squareUsed = new boolean [MAX][MAX];
+   private int stepCount;
+   private int finalSquareNumber;
+   private int highestSquareNumberUsed;
+   private int lowestSquareNumberUsed;
+
 
    /*
      Square Spiral:
@@ -36,15 +41,13 @@ class ChessBoard
          /   \  We keep going RIGHT until we find a spare UP cell
    225 Deg   315 Deg
 
-
-
    -----------------
-
-
    */
+
    public ChessBoard ()
    {
       board [CENTER_X][CENTER_Y] = 1;
+      lowestSquareNumberUsed     = 1;
 
       int x = CENTER_X + 1;
       int y = CENTER_Y;
@@ -157,7 +160,7 @@ class ChessBoard
       ---------------------
       | X |   |   |   | X |
       ---------------------
-      |   |   | S |   |   |
+      |   |   | K |   |   |
       ---------------------
       | X |   |   |   | X |
       ---------------------
@@ -218,7 +221,6 @@ class ChessBoard
       }
 
 
-
       if (isNewMinValue (minValue, row + 1, col - 2) == true)
       {
          minValue = board [row + 1][col - 2];
@@ -251,6 +253,11 @@ class ChessBoard
       {
          squareUsed [minRow][minCol] = true;
 
+         if (minValue > highestSquareNumberUsed)
+            highestSquareNumberUsed = minValue;
+
+         stepCount++;
+
          return new Point (minRow, minCol);
       }
       else
@@ -259,11 +266,13 @@ class ChessBoard
       }
    }
 
-   public int makeAllKnightMoves ()
+   public void makeAllKnightMoves ()
    {
-      int finalValue = -1;
+      finalSquareNumber       = -1;
+      highestSquareNumberUsed = 0;
 
       squareUsed [CENTER_X][CENTER_Y] = true;
+      stepCount++;
 
       Point currMinPoint = new Point (CENTER_X, CENTER_Y);
 
@@ -273,11 +282,11 @@ class ChessBoard
       {
          Point newMinPoint = getMinKnightMove (currMinPoint);
 
-         if (newMinPoint == null)
+         if (newMinPoint == null) // No more moves available ?
          {
-            finalValue = board[(int) currMinPoint.getX()][(int) currMinPoint.getY()];
+            finalSquareNumber = board[(int) currMinPoint.getX()][(int) currMinPoint.getY()];
 
-            System.out.println (" -> Stopped at " + currMinPoint  + ": " + finalValue );
+            //System.out.println (" -> Stopped at " + currMinPoint  + ": " + finalSquareNumber );
 
             keepGoing = false;
          }
@@ -285,8 +294,74 @@ class ChessBoard
          currMinPoint = newMinPoint;
       }
 
-      return finalValue;
+      //return finalValue;
    }
+
+   public int getStepCount ()
+   {
+      return stepCount;
+   }
+
+   public int getFinalSquareNumber ()
+   {
+      return finalSquareNumber;
+   }
+
+   public int getHighestSquareNumberUsed ()
+   {
+      return highestSquareNumberUsed;
+   }
+
+   public int getLowestSquareNumberUsed ()
+   {
+      return lowestSquareNumberUsed;
+   }
+
+   public int countSquares (boolean isSquareUsed)
+   {
+      // Less Than or Equals To highestSquareNumberUsed !
+      int count = 0;
+
+      for (int row = 0; row < MAX; row++)
+      {
+         for (int col = 0; col < MAX; col++)
+         {
+            if ((board[row][col]       <= highestSquareNumberUsed) &&
+                (squareUsed [row][col] == isSquareUsed           ) )
+            {
+               count++;
+            }
+         }
+      }
+
+      return count;
+   }
+
+   public String getStatistics ()
+   {
+      StringBuilder sb    = new StringBuilder();
+
+      sb.append ("Trapped Knight at square:   " + String.format("%,d", getFinalSquareNumber() ) + "\n");
+
+      sb.append ("After moves / steps:        " + String.format("%,d", getStepCount() ) + "\n");
+
+      sb.append ("Lowest Square Number used:  " + String.format("%,d", getLowestSquareNumberUsed() )  + "\n");
+      sb.append ("Highest Square Number used: " + String.format("%,d", getHighestSquareNumberUsed() ) + "\n");
+
+      int    usedCount = countSquares (true);
+      double usedPct   = 100.0 * usedCount / getHighestSquareNumberUsed();
+
+      int    notUsedCount = countSquares (false);
+      double notUsedPct   = 100.0 * notUsedCount / getHighestSquareNumberUsed();
+
+      sb.append ("Number of Squares used:     " + String.format("%,d", usedCount)    +
+                 " (" + String.format("%.2f", usedPct)    + "%)" + "\n");
+      sb.append ("Number of Squares not used: " + String.format("%,d", notUsedCount) +
+                " (" + String.format("%.2f", notUsedPct) + "%)" + "\n");
+
+      return sb.toString();
+   }
+
 }
 
 
@@ -297,12 +372,9 @@ public class TrappedKnight
    {
       ChessBoard board = new ChessBoard ();
 
-      int finalValue = board.makeAllKnightMoves ();
+      board.makeAllKnightMoves ();
 
       System.out.println (board.toString() );
-
-      System.out.println ();
-      System.out.println ("Trapped Knight at: " + finalValue );
-      System.out.println ();
+      System.out.println (board.getStatistics () );
    }
 }
